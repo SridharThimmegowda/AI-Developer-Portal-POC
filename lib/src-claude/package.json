@@ -1,0 +1,23 @@
+{
+  "name": "inspirations-migration-poc",
+  "version": "1.0.0",
+  "description": "inspirations migration POC",
+  "main": "summarize.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.716.0",
+    "@types/aws-lambda": "^8.10.146",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "chrome-aws-lambda": "^10.1.0",
+    "lodash": "^4.17.21",
+    "node-fetch": "^3.3.2",
+    "puppeteer": "^22.14.0",
+    "robots-parser": "^3.0.1"
+  }
+}
