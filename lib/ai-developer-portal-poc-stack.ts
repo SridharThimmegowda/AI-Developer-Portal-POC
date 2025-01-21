@@ -23,7 +23,7 @@ export class AiDeveloperPortalPocStack extends cdk.Stack {
         code: lambda.Code.fromAsset("./lib/src-claude"), // Assumes the lambda code is in the 'lambda' directory
         handler: "claude.handler",
         memorySize: 512,
-        timeout: cdk.Duration.seconds(300),
+        timeout: cdk.Duration.minutes(5),
         description:
           "developer portal poc to migrate inspirations to ideashub lambda function",
       }
@@ -55,11 +55,15 @@ export class AiDeveloperPortalPocStack extends cdk.Stack {
     });
 
     const claudelambdaIntegration = new apigateway.LambdaIntegration(
-      claudeInspirationsMigration
+      claudeInspirationsMigration,
+      {
+        proxy: true, // Enable proxy integration for asynchronous invocation
+      }
     );
 
     restApi.root.addMethod("POST", claudelambdaIntegration, {
       authorizer: authorizer,
+      methodResponses: [{ statusCode: "202" }], // Return 202 Accepted for async invocation
     });
   }
 }
