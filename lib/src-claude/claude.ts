@@ -1,82 +1,114 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import * as path from "path";
+import * as fs from "fs";
 
-export const handler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+interface Event {
+  body?: string;
+}
+
+interface Body {
+  migration_type?: string;
+  inspirations_name?: string;
+  description?: string;
+  steps_to_execute?: string;
+  considerations?: string;
+  example?: string;
+  scripthub_name?: string;
+  prerequisites?: string;
+  limitations?: string;
+  steps_to_run?: string;
+  output?: string;
+}
+
+export const handler = async (event: Event) => {
   console.log({ event });
+  const body: Body = JSON.parse(event.body || "{}");
+  const promptText = buildPromptText(body);
+  console.log("promptText: ", { promptText });
+  const result = await bedrockQuery(promptText);
+
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "Hello World" }),
+    body: JSON.stringify(result),
   };
 };
 
-// export const handler = async (
-//   event: APIGatewayProxyEvent
-// ): Promise<APIGatewayProxyResult> => {
-//   console.log({ event });
-//   const body = JSON.parse(event.body || "{}");
-//   const text = body.text;
-//   console.log(text);
-//   const result = await correctGrammar(text);
+// Build the prompt text for grammatical correction
+const buildPromptText = (body: Body): string => {
+  let promptTextFormatted = "";
+  if (body.migration_type === "inspiration") {
+    const templatePath = path.join(
+      "/var/task",
+      "prompt-templates",
+      `inspiration.txt`
+    );
 
-//   return {
-//     statusCode: 200,
-//     body: JSON.stringify(result),
-//   };
-// };
+    const templateContent = fs.readFileSync(templatePath, "utf8");
 
-// // Function to correct grammar using Bedrock
-// const correctGrammar = async (text: string): Promise<string> => {
-//   const promptText = buildPromptText(text);
-//   const correctedText = await bedrockQuery(promptText);
-//   return correctedText;
-// };
+    promptTextFormatted = templateContent
+      .replace("{{INSPIRATIONS_NAME}}", body.inspirations_name || "")
+      .replace("{{DESCRIPTION}}", body.description || "")
+      .replace("{{STEPS_TO_EXECUTE}}", body.steps_to_execute || "")
+      .replace("{{CONSIDERATIONS}}", body.considerations || "")
+      .replace("{{EXAMPLE}}", body.example || "");
+  } else if (body.migration_type === "scripthub") {
+    const templatePath = path.join(
+      "/var/task",
+      "prompt-templates",
+      `scripthub.txt`
+    );
 
-// // Build the prompt text for grammatical correction
-// const buildPromptText = (text: string): string => {
-//   return `Please correct the grammar of the following text:\n\n${text}`;
-// };
+    const templateContent = fs.readFileSync(templatePath, "utf8");
 
-// const bedrockClient = new BedrockRuntimeClient({ region: "us-west-2" });
+    promptTextFormatted = templateContent
+      .replace("{{SCRIPTHUB_NAME}}", body.scripthub_name || "")
+      .replace("{{DESCRIPTION}}", body.description || "")
+      .replace("{{PREREQUISITES}}", body.prerequisites || "")
+      .replace("{{LIMITATIONS}}", body.limitations || "")
+      .replace("{{STEPS_TO_RUN}}", body.steps_to_run || "")
+      .replace("{{OUTPUT}}", body.output || "");
+  }
 
-// const bedrockQuery = async (promptText: string): Promise<string> => {
-//   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
-//   const requestBody = {
-//     anthropic_version: "bedrock-2023-05-31",
-//     max_tokens: 5000,
-//     temperature: 0,
-//     messages: [
-//       {
-//         role: "user",
-//         content: [{ type: "text", text: promptText }],
-//       },
-//     ],
-//   };
+  return promptTextFormatted;
+};
 
-//   try {
-//     const params = {
-//       modelId,
-//       body: JSON.stringify(requestBody),
-//       accept: "*/*",
-//       contentType: "application/json",
-//     };
-//     console.log(params);
-//     const command = new InvokeModelCommand(params);
-//     console.log({ Command: command });
-//     const response = await bedrockClient.send(command);
-//     console.log("Hello");
-//     console.log(JSON.stringify(response));
-//     const responseData = new TextDecoder().decode(response.body);
-//     const finalOutput = JSON.parse(responseData);
-//     console.log({ CompleteBedRockeRes: finalOutput });
-//     console.log({ finalOutput: finalOutput.content[0].text });
-//     return finalOutput.content[0].text;
-//   } catch (error) {
-//     console.error(`Error querying Bedrock service: ${error}`);
-//     return "";
-//   }
-// };
+const bedrockClient = new BedrockRuntimeClient({ region: "us-west-2" });
+
+const bedrockQuery = async (promptText: string): Promise<string> => {
+  const modelId = "anthropic.claude-3-opus-20240229-v1:0";
+  const requestBody = {
+    anthropic_version: "bedrock-2023-05-31",
+    max_tokens: 5000,
+    temperature: 0,
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "text", text: promptText }],
+      },
+    ],
+  };
+
+  try {
+    const params = {
+      modelId,
+      body: JSON.stringify(requestBody),
+      accept: "*/*",
+      contentType: "application/json",
+    };
+    console.log(params);
+    const command = new InvokeModelCommand(params);
+    console.log({ Command: command });
+    const response = await bedrockClient.send(command);
+    console.log("Response received");
+    const responseData = new TextDecoder().decode(response.body);
+    const finalOutput = JSON.parse(responseData);
+    console.log({ CompleteBedRockeRes: JSON.stringify(finalOutput) });
+    return finalOutput.content[0].text;
+  } catch (error) {
+    console.error(`Error querying Bedrock service: ${error}`);
+    return "";
+  }
+};
