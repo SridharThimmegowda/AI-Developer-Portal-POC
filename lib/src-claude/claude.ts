@@ -40,7 +40,11 @@ export const handler = async (event: Event) => {
 const buildPromptText = (body: Body): string => {
   let promptTextFormatted = "";
   if (body.migration_type === "inspiration") {
-    const templatePath = path.join("/var/task", "prompt-templates", `V4.txt`);
+    const templatePath = path.join(
+      "/var/task",
+      "prompt-templates",
+      `inspiration.txt`
+    );
 
     const templateContent = fs.readFileSync(templatePath, "utf8");
 
@@ -54,7 +58,7 @@ const buildPromptText = (body: Body): string => {
     const templatePath = path.join(
       "/var/task",
       "prompt-templates",
-      `SCRIPT1.txt`
+      `scripthub.txt`
     );
 
     const templateContent = fs.readFileSync(templatePath, "utf8");
