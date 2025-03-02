@@ -1,11 +1,3 @@
-// export const handler = async (event) => {
-//   console.log({ event });
-//   return {
-//     statusCode: 200,
-//     body: JSON.stringify({ message: "Hello World" }),
-//   };
-// };
-
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
@@ -13,9 +5,27 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 
-export const handler = async (event) => {
+interface Event {
+  body?: string;
+}
+
+interface Body {
+  migration_type?: string;
+  inspirations_name?: string;
+  description?: string;
+  steps_to_execute?: string;
+  considerations?: string;
+  example?: string;
+  scripthub_name?: string;
+  prerequisites?: string;
+  limitations?: string;
+  steps_to_run?: string;
+  output?: string;
+}
+
+export const handler = async (event: Event) => {
   console.log({ event });
-  const body = JSON.parse(event.body || "{}");
+  const body: Body = JSON.parse(event.body || "{}");
   const promptText = buildPromptText(body);
   console.log("promptText: ", { promptText });
   const result = await bedrockQuery(promptText);
@@ -27,7 +37,7 @@ export const handler = async (event) => {
 };
 
 // Build the prompt text for grammatical correction
-const buildPromptText = (body) => {
+const buildPromptText = (body: Body): string => {
   let promptTextFormatted = "";
   if (body.migration_type === "inspiration") {
     const templatePath = path.join(
@@ -39,11 +49,11 @@ const buildPromptText = (body) => {
     const templateContent = fs.readFileSync(templatePath, "utf8");
 
     promptTextFormatted = templateContent
-      .replace("{{INSPIRATIONS_NAME}}", body.inspirations_name)
-      .replace("{{DESCRIPTION}}", body.description)
-      .replace("{{STEPS_TO_EXECUTE}}", body.steps_to_execute)
-      .replace("{{CONSIDERATIONS}}", body.considerations)
-      .replace("{{EXAMPLE}}", body.example);
+      .replace("{{INSPIRATIONS_NAME}}", body.inspirations_name || "")
+      .replace("{{DESCRIPTION}}", body.description || "")
+      .replace("{{STEPS_TO_EXECUTE}}", body.steps_to_execute || "")
+      .replace("{{CONSIDERATIONS}}", body.considerations || "")
+      .replace("{{EXAMPLE}}", body.example || "");
   } else if (body.migration_type === "scripthub") {
     const templatePath = path.join(
       "/var/task",
@@ -54,12 +64,12 @@ const buildPromptText = (body) => {
     const templateContent = fs.readFileSync(templatePath, "utf8");
 
     promptTextFormatted = templateContent
-      .replace("{{SCRIPTHUB_NAME}}", body.scripthub_name)
-      .replace("{{DESCRIPTION}}", body.description)
-      .replace("{{PREREQUISITES}}", body.prerequisites)
-      .replace("{{LIMITATIONS}}", body.limitations)
-      .replace("{{STEPS_TO_RUN}}", body.steps_to_run)
-      .replace("{{OUTPUT}}", body.output);
+      .replace("{{SCRIPTHUB_NAME}}", body.scripthub_name || "")
+      .replace("{{DESCRIPTION}}", body.description || "")
+      .replace("{{PREREQUISITES}}", body.prerequisites || "")
+      .replace("{{LIMITATIONS}}", body.limitations || "")
+      .replace("{{STEPS_TO_RUN}}", body.steps_to_run || "")
+      .replace("{{OUTPUT}}", body.output || "");
   }
 
   return promptTextFormatted;
@@ -67,7 +77,7 @@ const buildPromptText = (body) => {
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-west-2" });
 
-const bedrockQuery = async (promptText) => {
+const bedrockQuery = async (promptText: string): Promise<string> => {
   const modelId = "anthropic.claude-3-opus-20240229-v1:0";
   const requestBody = {
     anthropic_version: "bedrock-2023-05-31",
@@ -95,7 +105,7 @@ const bedrockQuery = async (promptText) => {
     console.log("Response received");
     const responseData = new TextDecoder().decode(response.body);
     const finalOutput = JSON.parse(responseData);
-    console.log({ CompleteBedRockeRes: finalOutput.content[0].text });
+    console.log({ CompleteBedRockeRes: JSON.stringify(finalOutput) });
     return finalOutput.content[0].text;
   } catch (error) {
     console.error(`Error querying Bedrock service: ${error}`);
