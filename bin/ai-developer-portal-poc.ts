@@ -2,6 +2,7 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { AiDeveloperPortalPocStack } from "../lib/ai-developer-portal-poc-stack";
+import { AiDeveloperPortalPocWebSocketStack } from "../lib/ai-developer-portal-poc-websocket-stack";
 import { restAuthorizer } from "../lib/rest-authorizer";
 
 const app = new cdk.App();
@@ -12,6 +13,14 @@ const app = new cdk.App();
 new restAuthorizer(app, "restAuthorizer", {
   env: { account: "255431087816", region: "us-west-2" },
 });
+
+new AiDeveloperPortalPocWebSocketStack(
+  app,
+  "AiDeveloperPortalPocWebSocketStack",
+  {
+    env: { account: "255431087816", region: "us-west-2" },
+  }
+);
 
 new AiDeveloperPortalPocStack(app, "AiDeveloperPortalPocStack", {
   env: { account: "255431087816", region: "us-west-2" },

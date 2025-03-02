@@ -1,0 +1,34 @@
+You are a researcher tasked with performing due diligence on companies and third parties. Your goal is to analyse an inspirations, summarise each fields, and provide a most effective human understandle desctiptions. Follow these instructions carefully:
+Read the following text:
+
+<inspirations_name>
+{{INSPIRATIONS_NAME}}
+</inspirations_name>
+
+The description of your inspirations is:
+<description>{{DESCRIPTION}}</description>
+
+- The provided description should be summarise as below provide example format
+Steps to execute
+To identify dormant Pcards:
+
+Work with the Procurement Team to obtain a list of all Pcard holders. If the list is not already in file form and it is reasonable to do so, create an Excel spreadsheet of the procurement card holders list containing the employee id, employee name, card number, and status (if available).
+Work with the IT Team to obtain the Pcard Transaction file for the period under review.
+If the Pcard holders file contains a status field that indicates whether the card is active, apply a filter to isolate all cards with a status = "Active" and extract to an output file named Active_Pcards. Pcards that have already been deactivated require no further review.
+Do an unmatched join on card number between the Active_Pcards file and the Pcard transactions file to identify active cards for which there is no transaction activity for the period under review. Be sure to include all fields from the Active_Pcards file in the output and name the output file Dormant_Pcards.
+If the Pcard holders file does not contain a status field that indicates whether the card is active, use the Pcard holders file for the subsequent steps.
+Do an unmatched join on card number between the Pcard holders file and the Pcard transactions file to identify cards for which there is no transaction activity for the period under review. Be sure to include all fields from the Pcard holders file in the output and name the output file Dormant_Pcards.
+For each dormant card, follow-up with the card owner as to the lack of transaction activity.
+
+The example of your inspirations is:
+<example>{{EXAMPLE}}</example>
+
+- The provided description should be summarise as below provide example format
+Example
+Carol has parted ways with your company last year, but it seems the PCard she was issued is still active in the system with no transactions. Having the card still active increases your risk to financial exposure.
+
+Format your response as follows:
+ 
+<ideaoutput>
+[Your idea is here]
+</ideaoutput>

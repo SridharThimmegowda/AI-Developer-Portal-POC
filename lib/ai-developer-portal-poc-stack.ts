@@ -14,23 +14,23 @@ export class AiDeveloperPortalPocStack extends cdk.Stack {
     // The code that defines your stack goes here
 
     // Create the Lambda function
-    const claudeInspirationsMigration = new lambda.Function(
+    const claudeMigration = new lambda.Function(
       this,
-      "developerPortalPOCInspirationsMigrationLambda",
+      "developerPortalPOCMigrationRestAPILambda",
       {
         runtime: lambda.Runtime.NODEJS_20_X,
-        functionName: "developer-portal-poc-inspirations-migration-lambda",
+        functionName: "developer-portal-poc-migration-rest-api-lambda",
         code: lambda.Code.fromAsset("./lib/src-claude"), // Assumes the lambda code is in the 'lambda' directory
         handler: "claude.handler",
         memorySize: 512,
         timeout: cdk.Duration.minutes(5),
         description:
-          "developer portal poc to migrate inspirations to ideashub lambda function",
+          "developer portal poc to migrate inspirations and scripthub lambda function",
       }
     );
 
     // Assuming lambdaFunction is your Lambda function object
-    claudeInspirationsMigration.role?.addManagedPolicy(
+    claudeMigration.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonBedrockFullAccess")
     );
 
@@ -55,7 +55,7 @@ export class AiDeveloperPortalPocStack extends cdk.Stack {
     });
 
     const claudelambdaIntegration = new apigateway.LambdaIntegration(
-      claudeInspirationsMigration,
+      claudeMigration,
       {
         proxy: true, // Enable proxy integration for asynchronous invocation
       }
